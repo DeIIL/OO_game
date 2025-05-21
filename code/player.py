@@ -1,16 +1,22 @@
 from settings import *
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups):
+    def __init__(self, position, groups, collision_sprites):
         super().__init__(groups)
         self.image = pygame.Surface((48, 56))
         self.image.fill('red')
+
+    #rects
         self.rect = self.image.get_frect(topleft =  position)
-    
+        self.old_rect = self.rect.copy()
+
     # movement
         self.direction = vector() #vector which came from alas in settings.py ps:no parameters passed means de directions are 0
         self.speed = 200
+        self.gravity = 800
 
+    #collision
+        self.collision_sprites = collision_sprites
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -19,11 +25,38 @@ class Player(pygame.sprite.Sprite):
             input_vector.x -= 1
         if keys[pygame.K_d]:
             input_vector.x += 1
-        self.direction = input_vector.normalize() if input_vector else input_vector #lenght of the vector always be 1
+        self.direction.x = input_vector.normalize().x if input_vector else input_vector.x #lenght of the vector always be 1
 
     def move(self, dt):
-        self.rect.topleft += self.direction * self.speed * dt
+    #horizontal
+        self.rect.x += self.direction.x * self.speed * dt
+        self.collision('horizontal')
+    #vertical
+        self.direction.y += self.gravity / 2 * dt
+        self.rect.y += self.direction.y * dt
+        self.direction.y += self.gravity / 2 * dt
+        self.collision('vertical')
+
+    def collision(self, axis):
+        for sprite in self.collision_sprites:
+            if sprite.rect.colliderect(self.rect):
+                if axis == 'horizontal':
+                    #left
+                    if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.old_rect.right:
+                        self.rect.left = sprite.rect.right
+                    #right
+                    if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.old_rect.left:
+                        self.rect.right = sprite.rect.left
+                else:
+                    #top
+                    if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.old_rect.bottom:
+                        self.rect.top = sprite.rect.bottom
+                    #bottom
+                    if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.old_rect.top:
+                        self.rect.bottom = sprite.rect.top
+                    self.direction.y = 0
 
     def update(self, dt):
+        self.old_rect = self.rect.copy()
         self.input()
         self.move(dt)
