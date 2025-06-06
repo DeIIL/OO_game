@@ -3,7 +3,31 @@ from settings import *
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, position, surface, groups):
         super().__init__(groups)
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill('white')
-        self.rect = self.image.get_frect(topleft = position)
-        self.old_rect = self.rect.copy()
+        self.__image = pygame.Surface((get_tile_size(), get_tile_size()))
+        self.__image.fill('white')
+        self.__rect = self.__image.get_frect(topleft = position)
+        self.__old_rect = self.__rect.copy()
+
+    @property
+    def image(self):
+        return self.__image
+    
+    @image.setter
+    def image(self, value):
+        self.__image = value
+
+    @property
+    def rect(self):
+        return self.__rect
+    
+    @rect.setter
+    def rect(self, value):
+        self.__rect = value
+
+    @property
+    def old_rect(self):
+        return self.__old_rect
+    
+    @old_rect.setter
+    def old_rect(self, value):
+        self.__old_rect = value

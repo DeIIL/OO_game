@@ -6,22 +6,23 @@ from os.path import join #for relative paths for our especificy OS, cause the im
 class Game:
     def __init__(self):
         pygame.init()
-        self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        window_width, window_height = get_window_dimensions()
+        self.__display_surface = pygame.display.set_mode((window_width, window_height))
         pygame.display.set_caption('SuperTest')
-        self.clock = pygame.Clock() #for measure the framerate 
+        self.__clock = pygame.Clock() #for measure the framerate 
 
-        self.tmx_maps = {0: load_pygame(join('data', 'levels', 'omni.tmx'))}
-        self.current_stage = Level(self.tmx_maps[0])
+        self.__tmx_maps = {0: load_pygame(join('data', 'levels', 'omni.tmx'))}
+        self.__current_stage = Level(self.__tmx_maps[0])
 
     def run(self):
         while True:
-            dt = self.clock.tick() / 1000
+            dt = self.__clock.tick() / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
             
-            self.current_stage.run(dt)
+            self.__current_stage.run(dt)
 
             pygame.display.update()
 
