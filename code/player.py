@@ -129,6 +129,8 @@ class Player(pygame.sprite.Sprite):
                     # top
                     if self.__rect.top <= sprite.rect.bottom and self.__old_rect.top >= sprite.old_rect.bottom:
                         self.__rect.top = sprite.rect.bottom
+                        if hasattr(sprite, 'moving'):
+                            self.__rect.top += 6
                     # bottom
                     if self.__rect.bottom >= sprite.rect.top and self.__old_rect.bottom <= sprite.old_rect.top:
                         self.__rect.bottom = sprite.rect.top

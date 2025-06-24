@@ -14,8 +14,8 @@ class MovingSprite(Sprite):
         self.__end_pos = end_pos
 
         #moviment
-        self.__moving = True
-        self.__speed = speed
+        self.moving = True
+        self.speed = speed
         self.direction = vector(1,0) if move_dir == 'x' else vector(0,1)
         self.__move_dir = move_dir
 
@@ -79,5 +79,5 @@ class MovingSprite(Sprite):
 
     def update(self, dt):
         self.old_rect = self.rect.copy()
-        self.rect.topleft += self.direction * self.__speed * dt
+        self.rect.topleft += self.direction * self.speed * dt
         self.check_border()
