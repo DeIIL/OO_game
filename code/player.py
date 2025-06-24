@@ -6,6 +6,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups, collision_sprites, semi_collision_sprites):
         super().__init__(groups)
         self.__image = pygame.image.load(join('graphics', 'player', 'idle', '0.png'))
+        self.__z = get_z_layers('main')
 
         # rects
         self.__rect = self.__image.get_frect(topleft=position)
@@ -29,7 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.timers = {
             'wall jump': Timer(250),
             'wall slide block': Timer(250),
-            'platform skip': Timer(300)
+            'platform skip': Timer(100)
         }
 
     @property
@@ -48,6 +49,10 @@ class Player(pygame.sprite.Sprite):
     def hitbox_rect(self):
         return self.__hitbox_rect
     
+    @property
+    def z(self):
+        return self.__z
+    
     @image.setter
     def image(self, value):
         self.__image = value
@@ -63,6 +68,10 @@ class Player(pygame.sprite.Sprite):
     @hitbox_rect.setter
     def hitbox_rect(self, value):
         self.__hitbox_rect = value
+
+    @z.setter
+    def z(self, value):
+        self.__z = value
 
     def input(self):
         keys = pygame.key.get_pressed()

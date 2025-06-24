@@ -27,5 +27,5 @@ def get_tile_size():
 def get_animation_speed():
     return _ANIMATION_SPEED
 
-def get_z_layers():
-    return _Z_LAYERS
+def get_z_layers(layer_name):
+    return _Z_LAYERS.get(layer_name, 0)
