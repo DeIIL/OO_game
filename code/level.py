@@ -2,14 +2,16 @@ from settings import *
 from sprites import Sprite
 from msprites import MovingSprite
 from player import Player
+from groups import AllSprites
 
 class Level:
     def __init__(self, tmx_map):
         self.__display_surface = pygame.display.get_surface()
 
         #groups
-        self.__all_sprites = pygame.sprite.Group()
+        self.__all_sprites = AllSprites()
         self.__collision_sprites = pygame.sprite.Group()
+        self.__semi_collision_sprites = pygame.sprite.Group()
 
         self.setup(tmx_map)
 
@@ -21,7 +23,7 @@ class Level:
         #objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'player':
-                Player((obj.x, obj.y), self.__all_sprites, self.__collision_sprites)
+                self.__player = Player((obj.x, obj.y), self.__all_sprites, self.__collision_sprites, self.__semi_collision_sprites)
 
         #moving objects
         for obj in tmx_map.get_layer_by_name('Moving Objects'):
@@ -39,9 +41,9 @@ class Level:
 
                print(start_pos)
                speed = obj.properties['speed']
-               MovingSprite((self.__all_sprites, self.__collision_sprites), start_pos, end_pos, move_dir, speed)
+               MovingSprite((self.__all_sprites, self.__semi_collision_sprites), start_pos, end_pos, move_dir, speed)
                
     def run(self, dt):
         self.__all_sprites.update(dt)
         self.__display_surface.fill('black')
-        self.__all_sprites.draw(self.__display_surface)
+        self.__all_sprites.draw(self.__player.hitbox_rect.center)
