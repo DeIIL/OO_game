@@ -3,10 +3,14 @@ from timer import Timer
 from os.path import join #for relative paths for our especificy OS, cause the import path of the maptmx file can change
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, semi_collision_sprites):
+    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frames):
         super().__init__(groups)
-        self.__image = pygame.image.load(join('graphics', 'player', 'idle', '0.png'))
         self.__z = get_z_layers('main')
+        
+        #image
+        self.__frames, self.__frame_index = frames, 0
+        self.__state, self.__facing_right = 'idle', True
+        self.__image = self.__frames[self.__state][self.__frame_index]
 
         # rects
         self.__rect = self.__image.get_frect(topleft=position)
@@ -19,6 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.__gravity = 1300
         self.__jump = False
         self.__jump_height = 900
+        self.__attacking = False
 
         # collision
         self.__collision_sprites = collision_sprites
@@ -30,7 +35,8 @@ class Player(pygame.sprite.Sprite):
         self.timers = {
             'wall jump': Timer(250),
             'wall slide block': Timer(250),
-            'platform skip': Timer(100)
+            'platform skip': Timer(100),
+            'attack cd': Timer(500)
         }
 
     @property
@@ -77,17 +83,31 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         input_vector = vector(0, 0)  # vector for if for example both right and left keys are pressed in the same frame they subtraction each other
         if not self.timers['wall jump'].active:
+            #move left
             if keys[pygame.K_a]:
                 input_vector.x -= 1
+                self.__facing_right = False
+            #move right
             if keys[pygame.K_d]:
                 input_vector.x += 1
+                self.__facing_right = True
+            #go down the platform
             if keys[pygame.K_s]:
                 self.timers['platform skip'].activate()
-            
+            #attack
+            if keys[pygame.K_j]:
+                self.attack()
+
             self.__direction.x = input_vector.normalize().x if input_vector else input_vector.x  # length of the vector always be 1
 
         if keys[pygame.K_SPACE]:
             self.__jump = True
+
+    def attack(self):
+        if not self.timers['attack cd'].active:
+            self.__attacking = True
+            self.__frame_index = 0
+            self.timers['attack cd'].activate()
 
     def move(self, dt):
         # horizontal
@@ -174,11 +194,40 @@ class Player(pygame.sprite.Sprite):
         for timer in self.timers.values():
             timer.update()
 
+    def animate(self, dt):
+        self.__frame_index += get_animation_speed() * dt
+        if self.__state == 'attack' and self.__frame_index >= len( self.__frames[self.__state] ):
+            self.__state = 'idle'
+        self.__image = self.__frames[self.__state][int( self.__frame_index % len( self.__frames[self.__state] ) )]
+        self.__image = self.__image if self.__facing_right else pygame.transform.flip( self.__image, True, False )
+
+        if self.__attacking and self.__frame_index > len( self.__frames[self.__state] ):
+            self.__attacking = False
+
+    def getstate(self):
+        if self.__on_surface['floor']:
+            if self.__attacking:
+                self.__state = 'attack'
+            else:
+                self.__state = 'idle' if self.__direction.x == 0 else 'run'
+        else:
+            if self.__attacking:
+                self.__state = 'air_attack'
+            else:
+                if any( ( self.__on_surface['left'], self.__on_surface['right'] ) ):
+                    self.__state = 'wall'
+                else:
+                    self.__state = 'jump' if self.__direction.y < 0 else 'fall'
+
     def update(self, dt):
         self.__old_rect = self.__hitbox_rect.copy()
         self.uptade_timers()
+        
         self.input()
         self.move(dt)
         self.platform_move(dt)
         self.check_contact()
+
+        self.getstate()
+        self.animate(dt)
         ##print(self.__on_surface)
