@@ -47,7 +47,7 @@ class Level:
                     groups = self.__all_sprites, 
                     collision_sprites = self.__collision_sprites, 
                     semi_collision_sprites = self.__semi_collision_sprites,
-                    frames = level_frames['player']
+                    frame = level_frames['player']
                     )
             else:
                 if obj.name in ('barrel', 'crate'):
@@ -70,8 +70,10 @@ class Level:
 
         #moving objects
         for obj in tmx_map.get_layer_by_name('Moving Objects'):
-           if obj.name == 'helicopter':
-               
+           if obj.name == 'spike':
+               pass
+           else:
+               frames = level_frames[obj.name]
                if obj.width > obj.height: #horizontal moviment
                    move_dir = 'x'
                    start_pos = ( obj.x, obj.y + obj.height / 2 )

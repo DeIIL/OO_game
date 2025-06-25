@@ -3,12 +3,12 @@ from timer import Timer
 from os.path import join #for relative paths for our especificy OS, cause the import path of the maptmx file can change
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frames):
+    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frame):
         super().__init__(groups)
         self.__z = get_z_layers('main')
         
         #image
-        self.__frames, self.__frame_index = frames, 0
+        self.__frames, self.__frame_index = frame, 0
         self.__state, self.__facing_right = 'idle', True
         self.__image = self.__frames[self.__state][self.__frame_index]
 
