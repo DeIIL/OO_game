@@ -20,7 +20,7 @@ class Game:
             'flag': import_folder( 'graphics', 'level', 'flag' ),
             'saw': import_folder( 'graphics', 'enemies', 'saw', 'animation' ),
             'floor_spike': import_folder( 'graphics', 'enemies', 'floor_spikes' ),
-            'palms': import_sub_folders( 'graphics', 'level', 'palms' ),
+            'palms': import_sub_folders( 'graphics', 'level', 'palms' ),#dictionary with the name folders as the keys - and the associated values will be a lists with surfaces
             'candle': import_folder( 'graphics', 'level', 'candle' ),
             'window': import_folder( 'graphics', 'level', 'big_chains' ),
             'big_chain': import_folder( 'graphics', 'level', 'big_chains' ),
@@ -28,8 +28,14 @@ class Game:
             'candle_light': import_folder( 'graphics', 'level', 'candle light' ),
             'player': import_sub_folders( 'graphics', 'player' ),
             'saw': import_folder( 'graphics', 'enemies', 'saw', 'animation' ),
+            'saw_chain': import_image( 'graphics', 'enemies', 'saw', 'saw_chain' ),
             'helicopter': import_folder( 'graphics', 'level', 'helicopter' ),
-            'boat': import_folder( 'graphics', 'objects', 'boat' )
+            'boat': import_folder( 'graphics', 'objects', 'boat' ),
+            'spike': import_image( 'graphics', 'enemies', 'spike_ball', 'Spiked Ball' ),
+            'spike_chain': import_image( 'graphics', 'enemies', 'spike_ball', 'spiked_chain' ),
+            'tooth': import_folder( 'graphics', 'enemies', 'tooth', 'run' ),
+            'shell': import_sub_folders( 'graphics', 'enemies', 'shell' ),
+            'pearl': import_image( 'graphics', 'enemies', 'bullets', 'pearl' ),
         }
 
     def run(self):
