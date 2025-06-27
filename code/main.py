@@ -50,9 +50,17 @@ class Game:
             'candle_light': import_folder( script_dir, '..' , 'graphics', 'level', 'candle light' ),
             'player': import_sub_folders( script_dir, '..' , 'graphics', 'player' ),
             'saw': import_folder(script_dir, '..' ,  'graphics', 'enemies', 'saw', 'animation' ),
+            'saw_chain': import_image(script_dir, '..' ,   'graphics', 'enemies', 'saw', 'saw_chain' ),
             'helicopter': import_folder( script_dir, '..' , 'graphics', 'level', 'helicopter' ),
-            'boat': import_folder(script_dir, '..' , 'graphics', 'objects', 'boat' )
+            'boat': import_folder(script_dir, '..' , 'graphics', 'objects', 'boat' ),
+            'spike': import_image(script_dir, '..' ,  'graphics', 'enemies', 'spike_ball', 'Spiked Ball' ),
+            'spike_chain': import_image(script_dir, '..' ,  'graphics', 'enemies', 'spike_ball', 'spiked_chain' ),
+            'tooth': import_folder(script_dir, '..' ,  'graphics', 'enemies', 'tooth', 'run' ),
+            'shell': import_sub_folders(script_dir, '..' ,  'graphics', 'enemies', 'shell' ),
+            'pearl': import_image(script_dir, '..' ,  'graphics', 'enemies', 'bullets', 'pearl' ),
         }
+    
+    
 
     def game_loop(self):
         window_width, window_height = get_window_dimensions()
