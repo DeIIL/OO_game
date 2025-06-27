@@ -1,11 +1,13 @@
 from settings import *
 from timer import Timer
+from math import sin
 from os.path import join #for relative paths for our especificy OS, cause the import path of the maptmx file can change
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frame):
+    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frame, data):
         super().__init__(groups)
         self.__z = get_z_layers('main')
+        self.data = data
         
         #image
         self.__frames, self.__frame_index = frame, 0
@@ -36,7 +38,8 @@ class Player(pygame.sprite.Sprite):
             'wall jump': Timer(250),
             'wall slide block': Timer(250),
             'platform skip': Timer(100),
-            'attack cd': Timer(500)
+            'attack cd': Timer(500),
+            'hit': Timer(400)
         }
 
     @property
@@ -78,6 +81,32 @@ class Player(pygame.sprite.Sprite):
     @z.setter
     def z(self, value):
         self.__z = value
+
+    @property
+    def state(self):
+        return self.__state
+
+    @state.setter
+    def state(self, value):
+        self.__state = value
+
+    # Getter e Setter para facing_right
+    @property
+    def facing_right(self):
+        return self.__facing_right
+
+    @facing_right.setter
+    def facing_right(self, value: bool):
+        self.__facing_right = value
+
+    # Getter e Setter para attacking
+    @property
+    def attacking(self):
+        return self.__attacking
+
+    @attacking.setter
+    def attacking(self, value: bool):
+        self.__attacking = value
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -219,6 +248,18 @@ class Player(pygame.sprite.Sprite):
                 else:
                     self.__state = 'jump' if self.__direction.y < 0 else 'fall'
 
+    def get_damage(self):
+        if not self.timers['hit'].active:
+            self.data.health -= 1
+            self.timers['hit'].activate()
+
+    def flicker(self):
+        if self.timers['hit'].active and sin(pygame.time.get_ticks() * 1000) >= 0:
+            white_mask = pygame.mask.from_surface(self.image)
+            white_surf = white_mask.to_surface()
+            white_surf.set_colorkey('black')
+            self.image = white_surf
+
     def update(self, dt):
         self.__old_rect = self.__hitbox_rect.copy()
         self.uptade_timers()
@@ -230,4 +271,5 @@ class Player(pygame.sprite.Sprite):
 
         self.getstate()
         self.animate(dt)
+        self.flicker()
         ##print(self.__on_surface)

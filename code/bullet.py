@@ -10,8 +10,13 @@ class Bullet(pygame.sprite.Sprite):
         self.__direction = direction
         self.__speed = speed
         self.z = get_z_layers('main')
-        self.timers = {'lifetime': Timer(5000)}
+        self.timers = {'lifetime': Timer(5000) , 'reverse': Timer(250)}
         self.timers['lifetime'].activate()
+
+    def reverse(self):
+            if not self.timers['reverse'].active:
+                 self.__direction *= -1
+                 self.timers['reverse'].activate()
 
     def update(self, dt):
         for timer in self.timers.values():

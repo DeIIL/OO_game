@@ -9,6 +9,9 @@ from main_menu import *
 from continue_menu import *
 from options_menu import *
 from pygame import mixer
+from data import Data
+from debug import debug
+from ui import UI   
 
 class Game:
     def __init__(self):
@@ -33,8 +36,10 @@ class Game:
         self.import_assets()
 
         script_dir = os.path.dirname(__file__)  
+        self.ui = UI(self.font_name, self.ui_frames)
+        self.data = Data(self.ui)
         self.__tmx_maps = {0: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', 'omni.tmx'))}
-        self.__current_stage = Level(self.__tmx_maps[0], self.__level_frames)
+        self.__current_stage = Level(self.__tmx_maps[0], self.__level_frames, self.data)
 
     def import_assets(self):
         script_dir = os.path.dirname(__file__)
@@ -58,6 +63,14 @@ class Game:
             'tooth': import_folder(script_dir, '..' ,  'graphics', 'enemies', 'tooth', 'run' ),
             'shell': import_sub_folders(script_dir, '..' ,  'graphics', 'enemies', 'shell' ),
             'pearl': import_image(script_dir, '..' ,  'graphics', 'enemies', 'bullets', 'pearl' ),
+            'items': import_sub_folders (script_dir, '..' , 'graphics' , 'items'),
+            'particle': import_folder(script_dir, '..' , 'graphics' , 'effects', 'particle')
+
+        }
+
+        self.ui_frames = {
+            'heart': import_folder(script_dir, '..', 'graphics' , 'ui' , 'heart'),
+            'coin': import_image(script_dir, '..', 'graphics' , 'ui' , 'coin')
         }
     
     
@@ -110,7 +123,8 @@ class Game:
                     sys.exit()
             
             self.__current_stage.run(dt)
-
+            self.ui.update(dt)
+            print(self.data.health)
             pygame.display.update()
 
 if __name__ == '__main__':

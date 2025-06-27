@@ -9,10 +9,14 @@ from random import uniform
 from tooth import Tooth
 from shell import Shell
 from bullet import Bullet
+from item import Item
+from particle_effect_sprite import ParticleEffectSprite
+
 
 class Level:
-    def __init__(self, tmx_map, level_frames):
+    def __init__(self, tmx_map, level_frames, data):
         self.__display_surface = pygame.display.get_surface()
+        self.data = data
 
         #groups
         self.__all_sprites = AllSprites()
@@ -21,9 +25,11 @@ class Level:
         self.__damage_sprites = pygame.sprite.Group()
         self.__tooth_sprites = pygame.sprite.Group()
         self.__bullet_sprites = pygame.sprite.Group()
+        self.__item_sprites = pygame.sprite.Group()
 
         self.setup(tmx_map, level_frames)
         self.__pearl_surf = level_frames['pearl']
+        self.particle_frames = level_frames['particle']
 
     def setup(self, tmx_map, level_frames):
         #tiles
@@ -54,7 +60,8 @@ class Level:
                     groups = self.__all_sprites, 
                     collision_sprites = self.__collision_sprites, 
                     semi_collision_sprites = self.__semi_collision_sprites,
-                    frame = level_frames['player']
+                    frame = level_frames['player'],
+                    data = self.data
                     )
             else:
                 if obj.name in ('barrel', 'crate'):
@@ -137,6 +144,9 @@ class Level:
                     reverse = obj.properties['reverse'],
                     player = self.__player, 
                     create_pearl = self.create_bullet )
+        
+        for obj in tmx_map.get_layer_by_name('Items'):
+            Item(obj.name, (obj.x + get_tile_size() / 2, obj.y + get_tile_size() /2), level_frames['items'][obj.name], (self.__all_sprites, self.__item_sprites) , self.data)
 
     def create_bullet(self, pos, direction):
         Bullet(pos, 
@@ -147,13 +157,32 @@ class Level:
 
     def bullet_collision(self):
         for sprite in self.__collision_sprites:
-            pygame.sprite.spritecollide(sprite, self.__bullet_sprites, True)
+            sprite = pygame.sprite.spritecollide(sprite, self.__bullet_sprites, True)
+            if sprite:
+                ParticleEffectSprite((sprite[0].rect.center), self.particle_frames, self.__all_sprites)  
 
     def hit_collision(self):
         for sprite in self.__damage_sprites:
             if sprite.rect.colliderect(self.__player.hitbox_rect):
+                self.__player.get_damage()
                 if hasattr(sprite, 'bullet'):
                     sprite.kill()
+                    ParticleEffectSprite((sprite.rect.center), self.particle_frames, self.__all_sprites)
+    
+    def item_collision(self):
+        if self.__item_sprites: 
+            item_sprites = pygame.sprite.spritecollide(self.__player, self.__item_sprites, True)
+            if item_sprites:
+                item_sprites[0].activate()
+                ParticleEffectSprite((item_sprites[0].rect.center), self.particle_frames, self.__all_sprites)
+
+    def attack_collision(self):
+        for target in self.__bullet_sprites.sprites() + self.__tooth_sprites.sprites():
+            facing_target = self.__player.rect.centerx < target.rect.centerx and self.__player.facing_right or \
+                            self.__player.rect.centerx > target.rect.centerx and not self.__player.facing_right
+            if target.rect.colliderect(self.__player.rect) and self.__player.attacking and facing_target:
+                target.reverse()
+
 
     def run(self, dt):
         self.__display_surface.fill('black')
@@ -161,5 +190,7 @@ class Level:
         self.__all_sprites.update(dt)
         self.bullet_collision()
         self.hit_collision()
+        self.item_collision()
+        self.attack_collision()
         
         self.__all_sprites.draw(self.__player.hitbox_rect.center)
