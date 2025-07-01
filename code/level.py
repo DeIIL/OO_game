@@ -18,8 +18,22 @@ class Level:
         self.__display_surface = pygame.display.get_surface()
         self.data = data
 
+        #level data
+        self.level_width = tmx_map.width * get_tile_size()
+        self.level_bottom = tmx_map.height * get_tile_size()
+        tmx_level_properties = tmx_map.get_layer_by_name('Data')[0].properties
+
+        if tmx_level_properties['bg']:
+            bg_tile = level_frames['bg_tiles'][tmx_level_properties['bg']]
+        else:
+            bg_tile = None
         #groups
-        self.__all_sprites = AllSprites()
+        self.__all_sprites = AllSprites(width = tmx_map.width , 
+                                        height = tmx_map.height, 
+                                        bg_tile = bg_tile, 
+                                        top_limit = tmx_level_properties['top_limit'],
+                                        clouds = {'large' : level_frames['cloud_large'], 'small' : level_frames['cloud_small']},
+                                        horizon_line = tmx_level_properties['horizon_line'])
         self.__collision_sprites = pygame.sprite.Group()
         self.__semi_collision_sprites = pygame.sprite.Group()
         self.__damage_sprites = pygame.sprite.Group()
@@ -80,7 +94,8 @@ class Level:
                     #animation speed
                     animation_speed = get_animation_speed() if not 'palm' in obj.name else get_animation_speed() + uniform( -1, 1 )
                     AnimatedSprite( ( obj.x, obj.y ), frames, groups, z, animation_speed )
-
+                if obj.name == 'flag':
+                    self.level_finish_rect = pygame.FRect((obj.x, obj.y), (obj.width, obj.height))
         #moving objects
         for obj in tmx_map.get_layer_by_name('Moving Objects'):
            if obj.name == 'spike':
@@ -145,9 +160,24 @@ class Level:
                     player = self.__player, 
                     create_pearl = self.create_bullet )
         
+        #items
         for obj in tmx_map.get_layer_by_name('Items'):
             Item(obj.name, (obj.x + get_tile_size() / 2, obj.y + get_tile_size() /2), level_frames['items'][obj.name], (self.__all_sprites, self.__item_sprites) , self.data)
 
+        #water
+        for obj in tmx_map.get_layer_by_name('Water'):
+            rows = int(obj.height / get_tile_size())
+            cols = int(obj.width / get_tile_size())
+            for row in range(rows):
+                for col in range(cols):
+                    x = obj.x + col * get_tile_size()
+                    y = obj.y + row * get_tile_size()
+                    if row == 0:
+                        AnimatedSprite((x,y), level_frames['water_top'], self.__all_sprites, get_z_layers('water'))
+                    else:
+                        Sprite((x,y), level_frames['water_body'], self.__all_sprites, get_z_layers('water'))
+
+        
     def create_bullet(self, pos, direction):
         Bullet(pos, 
                groups = ( self.__all_sprites, self.__damage_sprites, self.__bullet_sprites ), 
@@ -183,6 +213,20 @@ class Level:
             if target.rect.colliderect(self.__player.rect) and self.__player.attacking and facing_target:
                 target.reverse()
 
+    def check_constraint(self):
+        # left right
+        if self.__player.hitbox_rect.left <= 0:
+            self.__player.hitbox_rect.left = 0
+        if self.__player.hitbox_rect.right >= self.level_width:
+            self.__player.hitbox_rect.right = self.level_width
+
+        #bottom 
+        if self.__player.hitbox_rect.bottom > self.level_bottom:
+            print('death')
+
+        #success
+        if self.__player.hitbox_rect.colliderect(self.level_finish_rect):
+            print('Success')
 
     def run(self, dt):
         self.__display_surface.fill('black')
@@ -192,5 +236,6 @@ class Level:
         self.hit_collision()
         self.item_collision()
         self.attack_collision()
+        self.check_constraint()
         
-        self.__all_sprites.draw(self.__player.hitbox_rect.center)
+        self.__all_sprites.draw(self.__player.hitbox_rect.center , dt)

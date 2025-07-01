@@ -21,6 +21,13 @@ _Z_LAYERS = {
 def get_window_dimensions():
     return _WINDOW_WIDTH, _WINDOW_HEIGHT
 
+def get_window_width():
+    return _WINDOW_WIDTH
+
+
+def get_window_height():
+    return _WINDOW_HEIGHT
+
 def get_tile_size():
     return _TILE_SIZE
 
@@ -28,4 +35,4 @@ def get_animation_speed():
     return _ANIMATION_SPEED
 
 def get_z_layers(layer_name):
-    return _Z_LAYERS.get(layer_name, 0)
+	return _Z_LAYERS.get(layer_name, 0)

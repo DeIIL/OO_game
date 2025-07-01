@@ -12,6 +12,7 @@ from pygame import mixer
 from data import Data
 from debug import debug
 from ui import UI   
+from overworld import Overworld
 
 class Game:
     def __init__(self):
@@ -38,9 +39,10 @@ class Game:
         script_dir = os.path.dirname(__file__)  
         self.ui = UI(self.font_name, self.ui_frames)
         self.data = Data(self.ui)
-        self.__tmx_maps = {0: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', 'omni.tmx'))}
-        self.__current_stage = Level(self.__tmx_maps[0], self.__level_frames, self.data)
-
+        self.__tmx_maps = {0: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '2.tmx'))}
+        self.tmx_overworld = load_pygame(os.path.join(script_dir, '..', 'data', 'overworld', 'overworld.tmx'))
+        self.__current_stage = Overworld(self.tmx_overworld, self.data, self.overworld_frames)
+        
     def import_assets(self):
         script_dir = os.path.dirname(__file__)
         self.__level_frames = {
@@ -64,13 +66,24 @@ class Game:
             'shell': import_sub_folders(script_dir, '..' ,  'graphics', 'enemies', 'shell' ),
             'pearl': import_image(script_dir, '..' ,  'graphics', 'enemies', 'bullets', 'pearl' ),
             'items': import_sub_folders (script_dir, '..' , 'graphics' , 'items'),
-            'particle': import_folder(script_dir, '..' , 'graphics' , 'effects', 'particle')
-
+            'particle': import_folder(script_dir, '..' , 'graphics' , 'effects', 'particle'),
+            'water_top': import_folder( script_dir, '..' , 'graphics', 'level', 'water', 'top' ),
+            'water_body': import_image( script_dir, '..' , 'graphics', 'level', 'water', 'body' ),
+            'bg_tiles': import_folder_dict(script_dir, '..', 'graphics', 'level', 'bg', 'tiles'),
+            'cloud_small': import_folder(script_dir,'..', 'graphics','level', 'clouds', 'small'),
+			'cloud_large': import_image(script_dir, '..', 'graphics','level', 'clouds', 'large_cloud')	
         }
 
         self.ui_frames = {
             'heart': import_folder(script_dir, '..', 'graphics' , 'ui' , 'heart'),
             'coin': import_image(script_dir, '..', 'graphics' , 'ui' , 'coin')
+        }
+
+        self.overworld_frames = {
+            'palms': import_folder(script_dir, '..', 'graphics' , 'overworld' , 'palm'),
+            'water': import_folder(script_dir, '..', 'graphics' , 'overworld' , 'water'),   
+            'path': import_folder_dict(script_dir, '..', 'graphics' , 'overworld' , 'path'),
+            'icon': import_sub_folders(script_dir, '..', 'graphics' , 'overworld' , 'icon'),  
         }
     
     
@@ -116,7 +129,7 @@ class Game:
         dt = self.__clock.tick() / 100000
         mixer.music.stop()
         while True:
-            dt = self.__clock.tick() / 1000
+            dt = self.__clock.tick() / 750
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -124,7 +137,6 @@ class Game:
             
             self.__current_stage.run(dt)
             self.ui.update(dt)
-            print(self.data.health)
             pygame.display.update()
 
 if __name__ == '__main__':
