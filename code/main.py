@@ -39,10 +39,26 @@ class Game:
         script_dir = os.path.dirname(__file__)  
         self.ui = UI(self.font_name, self.ui_frames)
         self.data = Data(self.ui)
-        self.__tmx_maps = {0: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '2.tmx'))}
+        self.__tmx_maps = {
+            0: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '0.tmx')),
+            1: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '1.tmx')),
+            2: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '2.tmx')),
+            3: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '3.tmx')),
+            4: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '4.tmx')),
+            5: load_pygame(os.path.join(script_dir, '..', 'data', 'levels', '5.tmx')),}
         self.tmx_overworld = load_pygame(os.path.join(script_dir, '..', 'data', 'overworld', 'overworld.tmx'))
-        self.__current_stage = Overworld(self.tmx_overworld, self.data, self.overworld_frames)
+        self.__current_stage = Level(self.__tmx_maps[self.data.current_level], self.__level_frames,self.audio_files, self.data, self.switch_stage)
         
+    def switch_stage(self, target, unlock = 0):
+        if target == 'level':
+            self.__current_stage = Level(self.__tmx_maps[self.data.current_level], self.__level_frames,self.audio_files, self.data, self.switch_stage)
+        else:
+            if unlock > 0:
+                self.data.unlocked_level = unlock
+            else:
+                self.data.health -= 1
+            self.__current_stage = Overworld(self.tmx_overworld, self.data, self.overworld_frames, self.switch_stage)
+
     def import_assets(self):
         script_dir = os.path.dirname(__file__)
         self.__level_frames = {
@@ -85,6 +101,14 @@ class Game:
             'path': import_folder_dict(script_dir, '..', 'graphics' , 'overworld' , 'path'),
             'icon': import_sub_folders(script_dir, '..', 'graphics' , 'overworld' , 'icon'),  
         }
+
+        self.audio_files = {
+            'coin': pygame.mixer.Sound(join(script_dir, '..', 'audio', 'coin.wav')),
+            'attack': pygame.mixer.Sound(join(script_dir,'..', 'audio', 'attack.wav')),
+			'jump': pygame.mixer.Sound(join(script_dir,'..', 'audio', 'jump.wav')), 
+			'damage': pygame.mixer.Sound(join(script_dir,'..', 'audio', 'damage.wav')),
+			'pearl': pygame.mixer.Sound(join(script_dir,'..', 'audio', 'pearl.wav')),
+        }
     
     
 
@@ -121,24 +145,29 @@ class Game:
         text_rect.center = (x,y)
         self.display.blit(text_surface,text_rect)
 
-
+    
     def reset_keys(self):
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False,False,False,False
+
+    def check_game_over(self):
+        if self.data.health < 0:
+            pygame.quit()
 
     def run(self):
         dt = self.__clock.tick() / 100000
         mixer.music.stop()
         while True:
-            dt = self.__clock.tick() / 750
+            dt = self.__clock.tick() / 600
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
             
+            self.check_game_over()
             self.__current_stage.run(dt)
             self.ui.update(dt)
             pygame.display.update()
-
+ 
 if __name__ == '__main__':
     game = Game()
     ##game.run()

@@ -4,7 +4,7 @@ from math import sin
 from os.path import join #for relative paths for our especificy OS, cause the import path of the maptmx file can change
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frame, data):
+    def __init__(self, position, groups, collision_sprites, semi_collision_sprites, frame, data, attack_sound, jump_sound):
         super().__init__(groups)
         self.__z = get_z_layers('main')
         self.data = data
@@ -41,6 +41,11 @@ class Player(pygame.sprite.Sprite):
             'attack cd': Timer(500),
             'hit': Timer(400)
         }
+
+        self.attack_sound = attack_sound
+        self.jump_sound = jump_sound
+        self.attack_sound.set_volume(0.01)
+        self.jump_sound.set_volume(0.01)
 
     @property
     def image(self):
@@ -137,6 +142,7 @@ class Player(pygame.sprite.Sprite):
             self.__attacking = True
             self.__frame_index = 0
             self.timers['attack cd'].activate()
+            self.attack_sound.play()
 
     def move(self, dt):
         # horizontal
@@ -156,10 +162,12 @@ class Player(pygame.sprite.Sprite):
                 self.__direction.y = -self.__jump_height
                 self.timers['wall slide block'].activate()
                 self.__hitbox_rect.bottom -= 1
+                self.jump_sound.play()
             elif any((self.__on_surface['left'], self.__on_surface['right'])) and not self.timers['wall slide block'].active:
                 self.timers['wall jump'].activate()
                 self.__direction.y = -self.__jump_height
                 self.__direction.x = 1 if self.__on_surface['left'] else -1 #MAKE ALWAYS JUMP THE OPOSITIVE DIRECTION OF THE WALL
+                self.jump_sound.play()
             self.__jump = False 
 
         self.__collision('vertical')
